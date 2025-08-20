@@ -61,8 +61,6 @@ def scheduled_task():
     current_hour = now_time.hour
     
     # 定义允许执行的小时范围
-    # 上午: 8, 9, 10, 11 (因为12:00是结束时间，所以11:30是最后一次)
-    # 下午: 13, 14, 15, 16, 17, 18, 19 (因为20:00是结束时间，所以19:30是最后一次)
     is_in_morning_window = (8 < current_hour <= 12)
     is_in_afternoon_window = (13 < current_hour <= 20)
     
@@ -77,7 +75,6 @@ def scheduled_task():
 
 # 设置定时
 schedule.every().hour.at(":00").do(scheduled_task)
-# schedule.every().minute.at(":00").do(scheduled_task)
 schedule.every().hour.at(":30").do(scheduled_task) 
 
 # 循环

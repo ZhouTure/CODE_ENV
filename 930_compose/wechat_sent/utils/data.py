@@ -5,12 +5,10 @@ import pandas as pd
 last_length = None
 
 def get_time():
-    # 获取今天的日期
-    today = datetime.date.today()
 
+    today = datetime.date.today()
     # 设置未来的日期
     future_date = datetime.date(2025, 9, 30)
-
     # 计算两个日期之间的差值
     delta = future_date - today
     return delta.days
@@ -20,10 +18,10 @@ def get_mysql():
     config = {
         # 'host': 'localhost',
         'host': 'host.docker.internal',
-        'port': 3306,  # MySQL 默认端口是 3306
+        'port': 3306,
         'user': 'root',
         'password': '123456',
-        'database': 'sales_information',  # 你想要查询表名的数据库
+        'database': 'sales_information',
     }
     db = pymysql.connect(**config)
 
@@ -31,8 +29,10 @@ def get_mysql():
         # 创建游标对象
         with db.cursor() as cursor:
             cursor.execute('SELECT * FROM table_930 WHERE DATE(create_time) = CURDATE();')
+            # 获取列名
             columns = [desc[0] for desc in cursor.description]
             result = cursor.fetchall()
+            # 勾到dataframe
             df = pd.DataFrame(result, columns = columns)
             df = df.iloc[:, 2:]
             df.iloc[:, 2:-1] = df.iloc[:, 2:-1].astype(float)
