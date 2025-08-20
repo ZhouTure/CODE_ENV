@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  data_input:
+    build: ./data_input
+    container_name: 930_ip
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: E:\work_file\data
+        target: /data
+  web:
+    build: ./web
+    container_name: 930_web
+    restart: unless-stopped
+    ports:
+      - "1688:8888"
+    networks:
+      - app-networks
+  wechat_sent: 
+    build: ./wechat_sent
+    container_name: 930_ws
+    restart: unless-stopped
+    networks:
+      - app-networks
+
+networks:
+  app-networks:
+    name: app-networks
+    driver: bridge

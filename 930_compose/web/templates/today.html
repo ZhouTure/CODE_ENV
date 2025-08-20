@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日到单</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #000; /* 备用颜色 */
+            /* background-image: url("{{ url_for('static', filename='images/49.jpg') }}"); 添加背景图 */
+            background-size: cover; /* 覆盖整个页面 */
+            background-position: center; /* 居中显示 */
+            background-attachment: fixed; /* 固定背景 */
+            overflow: hidden;
+        }
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-color: transparent;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        h1 {
+            color: #333;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        /* --- MODIFICATION START --- */
+        .info {
+            margin-top: 20px;
+            max-height: 60vh; /* 设置一个最大高度, 例如视口高度的60% */
+            overflow-y: auto; /* 当内容超出最大高度时，自动显示垂直滚动条 */
+        }
+        /* --- MODIFICATION END --- */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%; /* 将表格宽度调整为100%以填充.info容器 */
+            border-collapse: collapse;
+            margin: 20px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            /* 棱角圆润 */
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 12px;
+        }
+        thead {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky; /* 使表头在滚动时固定 */
+            top: 0; /* 固定在滚动容器的顶部 */
+            z-index: 3; /* 确保表头在其他内容之上 */
+        }
+        thead tr:hover {
+            background-color: #4CAF50;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+    <!-- Add Socket.IO client library -->
+    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+</head>
+<body>
+    <canvas id="fireworks-canvas"></canvas>
+    <div class="container">
+        <nav style="text-align: center;">
+            <a href="/">主页</a>
+        </nav>
+        <h1 style="text-align: center;">今日到单</h1>
+        <div class="info" style="text-align: left;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>部门</th>
+                        <th>人员</th>
+                        <th>到单金额</th>
+                        <th>类别</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        // 初始化值
+        let currentRows = 0;
+        let lastRows = sessionStorage.getItem('lastRowCount') || 0;
+        // Connect to Socket.IO server
+        const socket = io();
+        // 测试
+        // socket.on('update_data', function(data) {
+        // console.log("Received data:", data);  // 检查是否收到数据
+        // console.log("Data content:", data.data);  // 检查 data 字段是否存在
+        // console.log("Row count:", data.col);  // 检查 col 字段是否存在
+        // });
+        // Listen for data updates from server
+        socket.on('update_data', function(data) {
+            // Update the table with new data
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '';
+            data.data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row['team']}</td>
+                    <td>${row['name']}</td>
+                    <td>${row['money']}</td>
+                    <td>${row['Sign']}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            // Update row count and check for fireworks
+            currentRows = data.col;
+            console.log("Row count:", currentRows);
+            checkForFireworks();
+        });
+        // 烟花
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        const colors = [
+                        '#ff0000', // 大红
+                        '#ff4e00', // 朱红
+                        '#ffce00', // 明黄
+                        '#ff9d00', // 橙黄
+                        '#ff0066', // 玫红
+                        '#cc0000'  // 深红
+                        ];
+        const particleCount = 180;
+        const gravity = 0.1;
+        const friction = 0.99;
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 2 + 1;
+                this.alpha = 1;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += gravity;
+                this.vx *= friction;
+                this.vy *= friction;
+                this.alpha -= 0.02;
+                // 当透明度低于阈值时标记为可移除
+                this.shouldRemove = this.alpha <= 0.05; // 新增
+            }
+            draw() {
+                // 如果应该移除了就不绘制
+                if(this.shouldRemove) return; // 新增
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        function createExplosion(x, y) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+        // function animate() {
+        //     requestAnimationFrame(animate);
+        //     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        //     ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //     particles.forEach((particle, index) => {
+        //         if (particle.alpha <= 0) {
+        //             particles.splice(index, 1);
+        //         } else {
+        //             particle.update();
+        //             particle.draw();
+        //         }
+        //     });
+        // }
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // 用 filter 代替直接修改数组
+            particles = particles.filter(particle => {
+                particle.update();
+                particle.draw();
+                return particle.alpha > 0; // 只保留未消失的粒子
+            });
+        }
+        // 触发器
+        const DURATION = 30000;
+        const LAUNCH_INTERVAL = 200;
+        let automaticFireworksInterval = null;
+        function startAutomaticFireworks() {
+            console.log(`New orders detected (${currentRows} vs ${lastRows}), starting fireworks!`);
+            automaticFireworksInterval = setInterval(() => {
+                const randomX = Math.random() * canvas.width;
+                const randomY = Math.random() * canvas.height * 0.7;
+                createExplosion(randomX, randomY);
+            }, LAUNCH_INTERVAL);
+            setTimeout(() => {
+                clearInterval(automaticFireworksInterval);
+                console.log("Fireworks show ended.");
+            }, DURATION);
+        }
+        function checkForFireworks() {
+            if (currentRows > lastRows) {
+                setTimeout(startAutomaticFireworks, 500);
+                lastRows = currentRows;
+                sessionStorage.setItem('lastRowCount', lastRows);
+            }
+        }
+        // 点击监听
+        window.addEventListener('click', (e) => {
+            if (!automaticFireworksInterval) {
+                createExplosion(e.clientX, e.clientY);
+            }
+        });
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            animate();
+        });
+    </script>
+</body>
+</html>
