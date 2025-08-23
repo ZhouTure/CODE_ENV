@@ -55,6 +55,7 @@ def mysql_insert(information_dt):
                         f"数据列数 ({len(information_dt.columns)}) 与数据库表列数 ({len(non_autoinc_cols)}) 不匹配"
                     )
                 
+                # 数据处理
                 data = [
                     SalesFirst(**dict(zip(non_autoinc_cols, row)))
                     for row in information_dt.values.tolist()

@@ -2,6 +2,11 @@ import datetime
 import pymysql
 import pandas as pd
 
+
+from sqlalchemy import create_engine, Column, Integer, String, DATETIME, Float, func
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+
 last_length = None
 
 def get_time():
@@ -23,22 +28,49 @@ def get_mysql():
         'password': '123456',
         'database': 'sales_information',
     }
-    db = pymysql.connect(**config)
 
-    try:
-        # 创建游标对象
-        with db.cursor() as cursor:
-            cursor.execute('SELECT * FROM table_930 WHERE DATE(create_time) = CURDATE();')
-            # 获取列名
-            columns = [desc[0] for desc in cursor.description]
-            result = cursor.fetchall()
-            # 勾到dataframe
-            df = pd.DataFrame(result, columns = columns)
-            df = df.iloc[:, 2:]
-            df.iloc[:, 2:-1] = df.iloc[:, 2:-1].astype(float)
-            return df
-    finally:
-        db.close()
+    db_url = f"mysql+pymysql://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
+    engine = create_engine(db_url)
+    Seeion = sessionmaker(bind = engine)
+    session = Seeion()
+
+    # db = pymysql.connect(**config)
+
+    Base = declarative_base()
+    class  Table_930(Base):
+        # __tablename__ = 'table_930'
+        id = Column(Integer, primary_key=True, autoincrement=True)
+        create_time = Column(DATETIME) 
+        team = Column(String(10)) 
+        name = Column(String(10)) 
+        money = Column(Float)
+        Sign = Column(String(255))
+    
+    query = session.query(Table_930).filter(
+        func.date(Table_930.create_time) == func.current_date()
+    )
+
+    result = query.all()
+
+
+
+
+
+
+    # try:
+    #     # 创建游标对象
+    #     with db.cursor() as cursor:
+    #         cursor.execute('SELECT * FROM table_930 WHERE DATE(create_time) = CURDATE();')
+    #         # 获取列名
+    #         columns = [desc[0] for desc in cursor.description]
+    #         result = cursor.fetchall()
+    #         # 勾到dataframe
+    #         df = pd.DataFrame(result, columns = columns)
+    #         df = df.iloc[:, 2:]
+    #         df.iloc[:, 2:-1] = df.iloc[:, 2:-1].astype(float)
+    #         return df
+    # finally:
+    #     db.close()
 
 
 def watch_mysql():
