@@ -1,4 +1,5 @@
 import time
+import numpy as np
 from numpy import shape
 from sqlalchemy import create_engine, inspect, true
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -36,6 +37,7 @@ def mysql_insert(information_dt):
         name = Column(String(10)) 
         money = Column(Float)
         Sign = Column(String(255))
+        order = Column(Float)
         
     try:
         with engine.connect() as conn:
@@ -59,7 +61,7 @@ def mysql_insert(information_dt):
                     SalesFirst(**dict(zip(non_autoinc_cols, row)))
                     for row in information_dt.values.tolist()
                 ]
-
+                # print(data)
                 session.bulk_save_objects(data)
                 session.commit()
                 print("数据插入成功。")
@@ -94,6 +96,7 @@ column_orign = 0
 try:
     while True:
         data = pd.read_excel(address, sheet_name = sheet)
+        data = data.replace({np.nan: None})
         # print("成功读取文件！")
         logging.info('成功读取文件！')
         if column_orign != data.shape[0]:

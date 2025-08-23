@@ -39,7 +39,8 @@ def get_mysql():
         team = Column(String(10))
         name = Column(String(10))
         money = Column(Float)
-        Sign = Column(String(255))
+        # Sign = Column(String(255))
+        order =  Column(Float)
     
     query = session.query(Table_930).filter(
         func.date(Table_930.create_time) == func.current_date()
@@ -47,21 +48,18 @@ def get_mysql():
 
     try:
         df = pd.read_sql(query.statement, session.bind)
-        return df.iloc[:, 2:]
+        df = df.fillna(0)
+        result = df.iloc[:, 2:]
+        result = result.groupby('name').agg({
+            'team': 'first',  # 取每个姓名的第一个战队值
+            'money': 'sum',    # 对金额求和
+            'order': 'sum'     # 对单数求和
+        }).reset_index()
+
+        # # 重新排列列的顺序
+        result.sort_values('money', ascending = False, inplace = True)
+        result.reset_index(inplace = True)
+        result = result[['team', 'name', 'money', 'order']]
+        return result
     except Exception as e:
         print(f"失败!错误的原因是:{e}")
-
-
-def watch_mysql():
-    global last_length
-    current_length = 1
-    pass
-
-
-if __name__ == '__main__':
-    days = get_time()
-    data = get_mysql()
-    # 打印结果
-    print(f"距离2025年9月30日还有 {days} 天。")
-    print(data.info())
-    print(data.head(5))

@@ -105,8 +105,8 @@
                     <tr>
                         <th>部门</th>
                         <th>人员</th>
-                        <th>到单金额</th>
-                        <th>类别</th>
+                        <th>总金额</th>
+                        <th>总单数</th>
                     </tr>
                 </thead>
                 <tbody id="data-table-body">
@@ -137,7 +137,7 @@
                     <td>${row['team']}</td>
                     <td>${row['name']}</td>
                     <td>${row['money']}</td>
-                    <td>${row['Sign']}</td>
+                    <td>${row['order']}</td>
                 `;
                 tableBody.appendChild(tr);
             });
@@ -203,7 +203,19 @@
                 particles.push(new Particle(x, y, color));
             }
         }
-        
+        // function animate() {
+        //     requestAnimationFrame(animate);
+        //     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        //     ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //     particles.forEach((particle, index) => {
+        //         if (particle.alpha <= 0) {
+        //             particles.splice(index, 1);
+        //         } else {
+        //             particle.update();
+        //             particle.draw();
+        //         }
+        //     });
+        // }
         function animate() {
             requestAnimationFrame(animate);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
