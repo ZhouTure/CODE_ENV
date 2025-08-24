@@ -1,7 +1,7 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from utils.get_data import get_time
-from utils.get_data import get_mysql
+from utils.get_data import get_data
 
 
 app = Flask(__name__)
@@ -21,13 +21,13 @@ def pred():
 @app.route('/today')
 def today():
     # print(get_mysql())
-    return render_template('today.html', data = get_mysql(), col = get_mysql().shape[0])
+    return render_template('today.html', data = get_data(), col = get_data().shape[0])
 
 # 后台线程每5秒推送数据
 def background_task():
     while True:
         socketio.sleep(5)
-        data = get_mysql()
+        data = get_data()
         data_dict = data.to_dict(orient='records')
         socketio.emit('update_data', {
             "data": data_dict,

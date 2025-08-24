@@ -9,6 +9,16 @@ services:
       - type: bind
         source: E:\work_file\data
         target: /data
+  
+  data_output:
+    build: ./web
+    container_name: 930_output
+    restart: unless-stopped
+    ports:
+      - "1689:5000"
+    networks:
+      - app-networks
+
   web:
     build: ./web
     container_name: 930_web
