@@ -23,36 +23,24 @@ Base = declarative_base()
 
 class Table_930(Base):
         """定义表类"""
-        # __tablename__ = 'table_930'
-        __tablename__ = 'sales_first'
+        __tablename__ = 'table_930'
         id = Column(Integer, primary_key = True, autoincrement = True)
-        # create_time = Column(DATETIME)
-        record_date = Column(DATETIME)
-        # team = Column(String(10))
-        department = Column(String(50))
-        # name = Column(String(10))
-        employee_name = Column(String(50))
-        # money = Column(Float)
-        ali_tp_performance = Column(DECIMAL)
-        # Sign = Column(String(255))
-        # order =  Column(Float)
+        create_time = Column(DATETIME)
+        team = Column(String(10))
+        name = Column(String(10))
+        money = Column(Float)
+        Sign = Column(String(255))
+        order =  Column(Float)
 
         def to_dict(self):
             "对象转换为字典"
-            # return {
-            #     'id': self.id,
-            #     'create_time': self.create_time.isoformat() if self.create_time else None,
-            #     'team': self.team,
-            #     'name': self.name,
-            #     'money': self.money,
-            #     'order': self.order
-            # }
             return {
                 'id': self.id,
-                'record_date': self.record_date.isoformat() if self.record_date else None,
-                'department': self.department,
-                'employee_name': self.employee_name,
-                'ali_tp_performance': self.ali_tp_performance
+                'create_time': self.create_time.isoformat() if self.create_time else None,
+                'team': self.team,
+                'name': self.name,
+                'money': self.money,
+                'order': self.order
             }
 
 class DatabaseManage:
@@ -78,8 +66,7 @@ class DatabaseManage:
         """获取今天的记录"""
         with self.get_session() as session:
             query = session.query(Table_930).filter(
-                # func.date(Table_930.create_time) == func.current_date()
-                func.date(Table_930.record_date) == func.current_date()
+                func.date(Table_930.create_time) == func.current_date()
             ).all()
             return [record.to_dict() for record in query]
     

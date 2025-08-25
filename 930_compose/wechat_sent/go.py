@@ -39,12 +39,21 @@ def scheduled_task():
 
     # 生成Markdown战报行
     markdown_lines = []
-    for i, row in data.iterrows():
-        crow = ['🥇', '🥈', '🥉']
-        line = f"> ▌第{i+1}名 ➤ <font color=\"warning\">**`{row['team']}{row['name']}`**</font>{rd_sign(i, crow, sign_list)}<font color=\"warning\">**合计到账`{row['money']:,}`元，合计到单`{row['order']}`单**</font>"
-        markdown_lines.append(line)
+    top_lines = []
+
+    if data is not None:
+        for i, row in data.iterrows():
+            crow = ['🥇', '🥈', '🥉']
+            size = ['25', '20', '15']
+            if i<3:
+                line3 = f"> <font size={size[i]}> {crow[i]}**{data.iloc[i, 1]}**{crow[i]} </font> "
+                top_lines.append(line3)
+
+            line = f"> ▌第{i+1}名 ➤ <font color=\"warning\">**`{row['team']}{row['name']}`**</font>{rd_sign(i, crow, sign_list)}<font color=\"warning\">**合计到账`{row['money']:,}`元，合计到单`{row['order']}`单**</font>"
+            markdown_lines.append(line)
 
     final_markdown_lines = '\n'.join(markdown_lines)
+    final_top_lines = '\n'.join(top_lines)
 
     battle_report = {
         "msgtype": "markdown",
@@ -54,10 +63,9 @@ def scheduled_task():
 <font color="warning">**起跑即冲刺，开局即决战！勇者无敌，所向披靡！**</font>  
     ### 🚀 {now_time.month}月{now_time.day}日战绩速览
 
-    > **⚔️ 战神风云榜**（实时刷新）：  
-    > 🥇 <font size=25>**{data.iloc[0, 1]}** 🔥 王者气概，无人能敌！→ 🔥 领先第二名 {data.iloc[0, 2]-data.iloc[1, 2]}元！</font>
-    > 🥈 <font size=22.5>**{data.iloc[1, 1]}** 🚀 紧追不舍，势头正劲！🚀 再进一步，榜首在望！</font>
-    > 🥉 <font size=20>**{data.iloc[2, 1]}** 🌟 稳扎稳打，表现亮眼！🌟 前三锁定，继续向前！</font>
+    # **⚔️ 战神风云榜**（实时刷新）：  
+
+    {final_top_lines}
 
 <font color="warning">💪💪💪到账接龙💥💥💥</font>  
 🏆 **今日战神榜** ⚔️  

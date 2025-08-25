@@ -1,6 +1,6 @@
 import datetime
-import pandas as pd
 import requests
+import pandas as pd
 
 def get_time():
     # 获取今天的日期
@@ -14,8 +14,8 @@ def get_time():
     return delta.days
 
 def get_data():
-    url = 'http://localhost:1689/api/records/department/KA'
-    
+    "从restful API获取数据"
+    url = 'http://data_output:5000/api/records/today'
     try:
         response = requests.get(url)
         data = response.json()
@@ -25,15 +25,17 @@ def get_data():
             return
         
         records = data['data']
-        print(f"共获取{len(records)}条KA部门记录")
+        print(f"共获取{len(records)}条今日记录")
         result = pd.DataFrame(records)
-        result['ali_tp_performance'] = result['ali_tp_performance'].astype(float)
         result = result.groupby([
-            'department',
-            'employee_name'
+            'team',
+            'name'
         ]).agg({
-            'ali_tp_performance' : 'sum'
+            'money' : 'sum',
+            'order' : 'sum'
             }).reset_index()
+        result.sort_values('money', ascending = False, inplace = True)
+        result = result.reset_index().iloc[:, 1:]
         return result
 
     except Exception as e:
@@ -41,5 +43,9 @@ def get_data():
         return None
 
 if __name__ == '__main__':
+    days = get_time()
     data = get_data()
-    print(data)
+    # 打印结果
+    print(f"距离2025年9月30日还有 {days} 天。")
+    print(data.info())
+    print(data.head(5))
