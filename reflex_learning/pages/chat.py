@@ -3,8 +3,8 @@ from openai import OpenAI
 from concurrent.futures import TimeoutError
 
 client = OpenAI(
-    api_key="02e8a2a1-f522-4de7-ae3f-4cee1acb143e",
-    base_url="https://ark.cn-beijing.volces.com/api/v3",
+    api_key = "",
+    base_url ="",
 )
 
 class State(rx.State):
