@@ -1,0 +1,6 @@
+.no-border-input {
+    border: none !important;      /* 强制去除边框 */
+    outline: none !important;     /* 去除聚焦时的轮廓 */
+    background: transparent;      /* 透明背景，增强无痕效果 */
+    padding: 0.5em;
+}

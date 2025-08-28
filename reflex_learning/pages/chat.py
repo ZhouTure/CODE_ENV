@@ -77,6 +77,8 @@ class State(rx.State):
 
 def chat():
     return rx.center( # 绝对居中
+        rx.el.link(rel="stylesheet", href="/form.css"),
+        rx.el.link(rel="stylesheet", href="/input_style.css"),
         rx.vstack(
             rx.heading("DeepSeek", size = "9", color="blue.700"),
             # 输入框
@@ -86,17 +88,24 @@ def chat():
                     placeholder="例如：常见的十字花科植物有哪些？",
                     on_blur = State.set_prompt,
                     width="25em",
-                    border_color = 'blue.300'
+                    variant = "soft",
+                    class_name= "no-border-input",
+                    radius = "none",
                 ),
-                width="100%",
-                align='center'
+                class_name = "form-control",
+                style = {
+                        # "margin_top": "-15px",      # 调整定位
+                        "margin_x": "auto",         # 水平居中
+                },
             ),
             rx.button( # 按钮组件
                 "生成回答",
+                size = "3",
                 width = "12em",
                 loading = State.processing,
                 on_click = State.get_answer,
-                color_scheme='blue'
+                # color_scheme='blue',
+                variant="ghost",
             ),
             rx.cond(
                 State.complete,

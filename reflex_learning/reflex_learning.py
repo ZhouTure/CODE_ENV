@@ -26,6 +26,11 @@ def index() -> rx.Component:
                 href="/about",
                 is_external=True,
             ),
+            rx.link(
+                rx.button("加载界面"),
+                href='/loading',
+                is_external=True,
+            ),
             spacing="5",
             justify="center",
             min_height="85vh",
